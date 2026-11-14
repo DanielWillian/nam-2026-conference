@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { API, visit, laneFor, shotForPR } from './helpers.js';
+import { API, visit, laneFor, momentOn, shotForPR } from './helpers.js';
 
 /**
  * One walk through the People deck. The rules (who is in the deck, stored
@@ -32,7 +32,8 @@ test.describe('People', () => {
     expect(liker, 'a buyer who already likes this attendee is in the deck').toBeTruthy();
     expect(first.id).not.toBe(liker.id);
 
-    await visit(page, '/people', { as: lane.user });
+    // the clock is pinned, so the coffee slot a match is offered does not depend on the hour
+    await visit(page, '/people', { as: lane.user, at: await momentOn(0, '08:00') });
     await expect(page.getByTestId('people-card')).toContainText(first.name);
     await shotForPR(page, 'people deck');
 
@@ -51,8 +52,16 @@ test.describe('People', () => {
     await page.reload();
     await expect(page.getByTestId('people-card')).toContainText(liker.name);
     await page.getByTestId('people-like').click();
-    await expect(page.getByTestId('match-item').filter({ hasText: liker.name })).toBeVisible();
+    const matchItem = page.getByTestId('match-item').filter({ hasText: liker.name });
+    await expect(matchItem).toBeVisible();
+    // the coffee invite shows at once, with a day and time, and is what the server stored
+    const invite = matchItem.getByTestId('match-invite');
+    await expect(invite).toHaveText(/^Up for a coffee and a chill\? \w+, \w+ \d+, \d+:\d{2} [AP]M$/);
     await shotForPR(page, 'people match');
+    const stored = (await deckOf(lane.user)).matches.find((m) => m.id === liker.id).invite;
+    expect(stored.message).toBe('Up for a coffee and a chill?');
+    await page.reload();
+    await expect(invite).toBeVisible();
 
     // a passed card stays gone too
     const next = (await deckOf(lane.user)).deck[0];

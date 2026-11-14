@@ -198,7 +198,10 @@ export const toUser = (row, extra = {}) => ({
   ...extra,
 });
 
-export const toAnnouncement = (row) => ({
+/** A match's coffee invite; `day` and `startsAt` are null when no time was available. */
+export const toInvite = (row) => ({ message: row.message, day: row.day ?? null, startsAt: row.starts_at ?? null });
+
+export const toAnnouncement =(row) => ({
   id: row.id, title: row.title, body: row.body, kind: row.kind,
   venueId: row.venue_id, postedAt: row.posted_at, pinned: !!row.pinned,
 });

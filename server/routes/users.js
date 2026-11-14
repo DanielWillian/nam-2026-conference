@@ -106,8 +106,9 @@ usersRouter.get('/:id/people', (req, res) => {
 });
 
 /**
- * PUT /api/users/:id/people/:targetId  { choice: 'like' | 'pass' }
- * The first decision stands; a repeat answers with it and changes nothing.
+ * PUT /api/users/:id/people/:targetId  { choice: 'like' | 'pass', day?, time? }
+ * The first decision stands; a repeat answers with it and changes nothing. A like that
+ * makes a match also answers with its coffee invite, picked from the clock in `day`/`time`.
  */
 usersRouter.put('/:id/people/:targetId', (req, res) => {
   if (!userExists.get(req.params.id) || !userExists.get(req.params.targetId)) {
@@ -120,7 +121,8 @@ usersRouter.put('/:id/people/:targetId', (req, res) => {
   if (Number(req.params.id) === Number(req.params.targetId)) {
     return res.status(400).json({ error: 'You cannot decide on yourself' });
   }
-  res.json(decide(Number(req.params.id), Number(req.params.targetId), choice));
+  res.json(decide(Number(req.params.id), Number(req.params.targetId), choice,
+    { day: req.body?.day, time: req.body?.time }));
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */

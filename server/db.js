@@ -212,6 +212,17 @@ CREATE TABLE IF NOT EXISTS people_decisions (
   PRIMARY KEY (user_id, target_id)
 );
 
+-- the coffee invite fixed when two attendees match, one row per pair (user_a < user_b);
+-- day and starts_at are NULL when the pair had no free slot left in common
+CREATE TABLE IF NOT EXISTS match_invites (
+  user_a    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_b    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  message   TEXT NOT NULL,
+  day       TEXT,
+  starts_at TEXT,
+  PRIMARY KEY (user_a, user_b)
+);
+
 CREATE TABLE IF NOT EXISTS ratings (
   id         INTEGER PRIMARY KEY,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -286,6 +297,7 @@ export function dropAll() {
     DROP TABLE IF EXISTS ratings;
     DROP TABLE IF EXISTS check_ins;
     DROP TABLE IF EXISTS reservations;
+    DROP TABLE IF EXISTS match_invites;
     DROP TABLE IF EXISTS people_decisions;
     DROP TABLE IF EXISTS user_tracks;
     DROP TABLE IF EXISTS speaker_follows;

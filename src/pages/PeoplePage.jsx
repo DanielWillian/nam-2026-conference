@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as api from '../lib/api.js';
 import { useConference, useFetch } from '../lib/store.jsx';
 import { useDocumentTitle } from '../lib/useDocumentTitle.js';
+import { dayLabel, time } from '../lib/format.js';
 import { Avatar, Button, EmptyState, ErrorState, SectionHeader, Skeleton } from '../components/ui.jsx';
 
 /**
@@ -11,7 +12,7 @@ import { Avatar, Button, EmptyState, ErrorState, SectionHeader, Skeleton } from 
  */
 export function PeoplePage() {
   useDocumentTitle('People');
-  const { currentUserId, tracks = [] } = useConference();
+  const { currentUserId, tracks = [], clock } = useConference();
   const { data, loading, error, reload } = useFetch(() => api.getPeople(currentUserId), [currentUserId]);
   const [deck, setDeck] = useState([]);
   const [matches, setMatches] = useState([]);
@@ -29,9 +30,9 @@ export function PeoplePage() {
     if (!card || busy) return;
     setBusy(true);
     try {
-      const res = await api.decidePerson(currentUserId, card.id, choice);
+      const res = await api.decidePerson(currentUserId, card.id, choice, clock);
       setDeck((d) => d.filter((c) => c.id !== card.id));
-      if (res.matched) setMatches((m) => [...m, card]);
+      if (res.matched) setMatches((m) => [...m, { ...card, invite: res.invite }]);
     } catch {
       /* the card stays, so the attendee can try again */
     } finally {
@@ -91,6 +92,12 @@ export function PeoplePage() {
                 <div className="min-w-0">
                   <p className="font-semibold">{m.name}</p>
                   <p className="text-xs text-muted">{m.jobTitle}, {m.company}</p>
+                  {m.invite && (
+                    <p data-testid="match-invite" className="mt-1 text-xs">
+                      {m.invite.message}
+                      {m.invite.day && ` ${dayLabel(m.invite.day)}, ${time(m.invite.startsAt)}`}
+                    </p>
+                  )}
                 </div>
               </li>
             ))}
