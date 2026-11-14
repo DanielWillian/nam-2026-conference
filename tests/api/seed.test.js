@@ -76,6 +76,20 @@ describe('The mock crowd', () => {
     }
   });
 
+  test('every track has a buyer and a seller from each seat group', async () => {
+    const pairs = {};
+    for (const id of crowdIds) {
+      const u = await api.json(`/users/${id}`);
+      for (const t of u.trackSlugs) (pairs[t] ??= new Set()).add(`${u.role} ${(id - 7) % 3}`);
+    }
+    const { tracks } = await api.json('/bootstrap');
+    for (const t of tracks) {
+      for (const role of ['buyer', 'seller']) {
+        for (const g of [0, 1, 2]) assert.ok(pairs[t.slug]?.has(`${role} ${g}`), `${t.slug} has a ${role} in group ${g}`);
+      }
+    }
+  });
+
   const heldBy = async (id) => (await api.json(`/users/${id}/schedule`)).days.flatMap((d) => d.sessions);
 
   test('each holds only confirmed seats, one per slot, in the slots their group calls for', async () => {
