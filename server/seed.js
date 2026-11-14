@@ -952,6 +952,20 @@ CROWD.forEach(([name, email, title, company, pronouns, city, tz, bio, interests,
   trackNames.forEach((t) => crowdTrack.run(id, trackBy[t].id));
 });
 
+// Three crowd members, of both roles, like each seeded attendee 1 to 6, so whoever picks a
+// role and a track can match straight away. Hand written, no PRNG.
+const LIKES = [
+  ['priya.raman@example.com', 1], ['tomas.herrera@example.com', 1], ['hannah.becker@example.com', 1],
+  ['seun.adeyemi@example.com', 2], ['meilin.chou@example.com', 2], ['declan.obrien@example.com', 2],
+  ['ananya.iyer@example.com', 3], ['lars.nilsson@example.com', 3], ['camila.duarte@example.com', 3],
+  ['yusuf.karim@example.com', 4], ['sakura.watanabe@example.com', 4], ['gabriel.moreau@example.com', 4],
+  ['zainab.mahmoud@example.com', 5], ['pedro.santos@example.com', 5], ['ingrid.solberg@example.com', 5],
+  ['rohan.mehta@example.com', 6], ['beatriz.fuentes@example.com', 6], ['nikolai.petrov@example.com', 6],
+];
+const likeStmt = db.prepare(`INSERT INTO people_decisions (user_id,target_id,choice)
+  VALUES ((SELECT id FROM users WHERE email = ?), ?, 'like')`);
+LIKES.forEach(([email, target]) => likeStmt.run(email, target));
+
 /* ============================== SUMMARY ============================ */
 const c = (t) => db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n;
 console.log(`✓ ${c('venues')} venues · ${c('rooms')} rooms · ${c('tracks')} tracks · ${c('tags')} tags`);

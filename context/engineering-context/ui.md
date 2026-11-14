@@ -135,6 +135,7 @@ sticky `glass` header, `<main id="main">`, and the footer.
 - `NAV` array (`to, label, icon, end`) drives both the desktop nav (`lg+`,
   `aria-label="Main"`) and the mobile menu (`aria-label="Mobile"`, toggled by
   the "Open menu"/"Close menu" button, closes on navigation, locks body scroll).
+  It includes People (`/people`, `heart`; see `people.md`).
   `/my-agenda` shows `reservations.size` as a badge.
 - Footer: three `nav` columns (Programme, On site, Conference) built from an
   inline array of `[label, to]`, plus `conference.dates · conference.city` from

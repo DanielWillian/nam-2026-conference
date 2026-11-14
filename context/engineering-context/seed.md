@@ -96,7 +96,9 @@ includes them. Each is Standard tier at an `@example.com` address and a company 
 Equal Experts (which keeps them out of the attendee switcher), has no portrait (generated
 avatar), alternating `buyer`/`seller` roles, two to four `user_tracks` and topic-tag
 interests, and holds no seat, waitlist place, follow, check-in or rating. The six above
-keep no role and no tracks. `tests/api/seed.test.js` holds all of it.
+keep no role and no tracks. `tests/api/seed.test.js` holds all of it. A hand-written `LIKES`
+array then seeds `people_decisions`: three crowd members of both roles like each of users 1 to 6
+(see `people.md`).
 
 ## Invariants
 

@@ -204,6 +204,14 @@ CREATE TABLE IF NOT EXISTS user_tracks (
   PRIMARY KEY (user_id, track_id)
 );
 
+-- a pass or a like on the People deck; the first choice stands, so there is no undo
+CREATE TABLE IF NOT EXISTS people_decisions (
+  user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  target_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  choice    TEXT NOT NULL CHECK (choice IN ('like', 'pass')),
+  PRIMARY KEY (user_id, target_id)
+);
+
 CREATE TABLE IF NOT EXISTS ratings (
   id         INTEGER PRIMARY KEY,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -278,6 +286,7 @@ export function dropAll() {
     DROP TABLE IF EXISTS ratings;
     DROP TABLE IF EXISTS check_ins;
     DROP TABLE IF EXISTS reservations;
+    DROP TABLE IF EXISTS people_decisions;
     DROP TABLE IF EXISTS user_tracks;
     DROP TABLE IF EXISTS speaker_follows;
     DROP TABLE IF EXISTS session_tags;
