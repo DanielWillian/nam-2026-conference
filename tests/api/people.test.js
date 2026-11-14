@@ -119,3 +119,83 @@ describe('PUT /users/:id/people/:targetId', () => {
     assert.ok(after.deck.every((c) => c.role === 'seller'));
   });
 });
+
+describe('the coffee invite on a new match', () => {
+  const COFFEE = 'Up for a coffee and a chill?';
+  const NO_TIME = 'No time is available for a coffee.';
+  let sessions;
+  let slots;
+
+  before(async () => {
+    sessions = await api.json('/sessions');
+    const seen = new Set();
+    slots = sessions
+      .map((s) => ({ day: s.day, startsAt: s.startsAt }))
+      .filter((s) => !seen.has(`${s.day} ${s.startsAt}`) && seen.add(`${s.day} ${s.startsAt}`))
+      .sort((a, b) => a.day.localeCompare(b.day) || a.startsAt.localeCompare(b.startsAt));
+  });
+
+  const inSlot = (slot) => sessions.find((s) => s.day === slot.day && s.startsAt === slot.startsAt && !s.isFull);
+  const book = async (user, slot) => {
+    const res = await api.put(`/users/${user}/reservations/${inSlot(slot).id}`, {});
+    assert.equal(res.body.status, 'confirmed');
+  };
+  // `a` likes first, `b` likes back: the second like makes the match
+  const match = async (a, b, now = {}) => {
+    await decide(a, b, 'like');
+    return api.put(`/users/${b}/people/${a}`, { choice: 'like', ...now });
+  };
+  const clockAt = (slot) => ({ day: slot.day, time: slot.startsAt });
+
+  test('a new match carries the coffee message and the first slot, and both attendees read it', async () => {
+    const res = await match(10, 11);
+    assert.equal(res.body.matched, true);
+    assert.deepEqual(res.body.invite, { message: COFFEE, day: slots[0].day, startsAt: slots[0].startsAt });
+    for (const [me, other] of [[10, 11], [11, 10]]) {
+      const { matches } = await people(me);
+      assert.deepEqual(matches.find((m) => m.id === other).invite, res.body.invite);
+    }
+  });
+
+  test('an unreturned like carries no invite', async () => {
+    const res = await decide(12, 13, 'like');
+    assert.equal(res.body.matched, false);
+    assert.equal(res.body.invite ?? null, null);
+  });
+
+  test('a slot is skipped when either attendee holds a confirmed seat in it, and never starts before the clock', async () => {
+    await book(14, slots[3]);
+    await book(15, slots[4]);
+    const res = await match(14, 15, clockAt(slots[3]));
+    assert.deepEqual(res.body.invite, { message: COFFEE, day: slots[5].day, startsAt: slots[5].startsAt });
+
+    // a slot starting exactly at the clock stays eligible; an earlier one is dropped
+    const exact = await match(16, 17, clockAt(slots[6]));
+    assert.deepEqual(exact.body.invite, { message: COFFEE, day: slots[6].day, startsAt: slots[6].startsAt });
+  });
+
+  test('the invite is fixed when the match is made, so a later seat does not move it', async () => {
+    const first = (await match(18, 19)).body.invite;
+    await book(18, slots[0]);
+    await decide(18, 19, 'like');
+    const { matches } = await people(18);
+    assert.deepEqual(matches.find((m) => m.id === 19).invite, first);
+  });
+
+  test('a waitlist place does not stop a slot being suggested', async () => {
+    const full = sessions.find((s) => s.isFull && slots.findIndex((x) => x.day === s.day && x.startsAt === s.startsAt) > 0);
+    const slot = { day: full.day, startsAt: full.startsAt };
+    const queued = await api.put(`/users/20/reservations/${full.id}`, {});
+    assert.equal(queued.body.status, 'waitlisted');
+    const res = await match(20, 21, clockAt(slot));
+    assert.deepEqual(res.body.invite, { message: COFFEE, day: slot.day, startsAt: slot.startsAt });
+  });
+
+  test('with no free slot left the message says no time is available', async () => {
+    const last = slots[slots.length - 1];
+    const res = await match(22, 23, { day: last.day, time: '23:59' });
+    assert.deepEqual(res.body.invite, { message: NO_TIME, day: null, startsAt: null });
+    const { matches } = await people(23);
+    assert.deepEqual(matches.find((m) => m.id === 22).invite, res.body.invite);
+  });
+});
