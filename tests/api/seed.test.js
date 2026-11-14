@@ -25,6 +25,12 @@ describe('Seeded attendees', () => {
     assert.deepEqual(strays, []);
   });
 
+  test('every attendee starts with no role', async () => {
+    const { users } = await api.json('/bootstrap');
+    assert.equal(users.length, 6);
+    for (const u of users) assert.equal((await api.json(`/users/${u.id}`)).role, null, u.name);
+  });
+
   test('every attendee starts with no tracks chosen', async () => {
     const { users } = await api.json('/bootstrap');
     assert.equal(users.length, 6);
