@@ -50,7 +50,8 @@ describe('the seeded likes', () => {
         await setUp(id, role, slugs);
         const { deck } = await people(id);
         const results = [];
-        for (const card of deck) results.push((await decide(id, card.id, 'like')).body.matched);
+        // the crowd is who likes back; the other five attendees have decided nothing
+        for (const card of deck.filter((c) => c.id > 6)) results.push((await decide(id, card.id, 'like')).body.matched);
         assert.ok(results.length > 0 && results.every(Boolean), `every like of attendee ${id} as a ${role} matches`);
       }
     }

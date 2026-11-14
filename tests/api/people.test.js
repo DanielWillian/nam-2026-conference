@@ -84,12 +84,11 @@ describe('PUT /users/:id/people/:targetId', () => {
   });
 
   test('a returned like is a match at once, an unreturned one is not', async () => {
-    // seed: crowd members 7 (buyer), 8 (seller) and 9 (buyer) like attendee 1
+    // seed: every crowd member likes attendee 1, so only another attendee has not liked back
     await setUp(1, 'buyer', slugs);
+    await setUp(3, 'seller', slugs);
     const before = (await people(1)).matches.length;
-    const { deck } = await people(1);
-    const stranger = deck.find((c) => c.id !== 8);
-    const miss = await decide(1, stranger.id, 'like');
+    const miss = await decide(1, 3, 'like');
     assert.equal(miss.body.matched, false);
     assert.equal((await people(1)).matches.length, before);
 
