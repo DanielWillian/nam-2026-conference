@@ -22,6 +22,12 @@ const presenting = db.prepare(`${SESSION_SELECT}
 const myReservations = db.prepare('SELECT session_id, status FROM reservations WHERE user_id = ?');
 const myCheckIns = db.prepare('SELECT session_id FROM check_ins WHERE user_id = ?');
 const myRatings = db.prepare('SELECT session_id, stars FROM ratings WHERE user_id = ?');
+const myTrackSlugs = db.prepare(`
+  SELECT t.slug FROM user_tracks ut JOIN tracks t ON t.id = ut.track_id
+  WHERE ut.user_id = ? ORDER BY t.id`);
+const trackIdBySlug = db.prepare('SELECT id FROM tracks WHERE slug = ?');
+const clearTracks = db.prepare('DELETE FROM user_tracks WHERE user_id = ?');
+const addTrack = db.prepare('INSERT INTO user_tracks (user_id, track_id) VALUES (?, ?)');
 const follow = db.prepare('INSERT OR IGNORE INTO speaker_follows (user_id, speaker_id) VALUES (?, ?)');
 const unfollow = db.prepare('DELETE FROM speaker_follows WHERE user_id = ? AND speaker_id = ?');
 
@@ -44,7 +50,32 @@ usersRouter.get('/:id', (req, res) => {
     reservations: myReservations.all(row.id).map((r) => ({ sessionId: r.session_id, status: r.status })),
     checkIns: myCheckIns.all(row.id).map((c) => c.session_id),
     ratings: myRatings.all(row.id).map((r) => ({ sessionId: r.session_id, stars: r.stars })),
+    trackSlugs: myTrackSlugs.all(row.id).map((t) => t.slug),
   }));
+});
+
+const replaceTracks = db.transaction((userId, trackIds) => {
+  clearTracks.run(userId);
+  for (const id of trackIds) addTrack.run(userId, id);
+});
+
+/**
+ * PUT /api/users/:id/tracks  { trackSlugs }
+ * Replaces the tracks this attendee picked. At least one is needed, and every
+ * slug must name a track.
+ */
+usersRouter.put('/:id/tracks', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { trackSlugs } = req.body ?? {};
+  if (!Array.isArray(trackSlugs) || trackSlugs.length === 0) {
+    return res.status(400).json({ error: 'Choose at least one track' });
+  }
+  const ids = trackSlugs.map((slug) => trackIdBySlug.get(String(slug))?.id);
+  if (ids.some((id) => id === undefined)) return res.status(400).json({ error: 'Unknown track' });
+
+  const userId = Number(req.params.id);
+  replaceTracks(userId, [...new Set(ids)]);
+  res.json({ trackSlugs: myTrackSlugs.all(userId).map((t) => t.slug) });
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */

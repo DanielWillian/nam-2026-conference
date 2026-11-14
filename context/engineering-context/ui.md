@@ -21,6 +21,8 @@ files:
   - src/components/UserSwitcher.jsx
   - src/components/RouteChange.jsx
   - src/pages/HomePage.jsx
+  - src/pages/ProfilePage.jsx
+  - tests/profile.spec.js
   - src/pages/NotFoundPage.jsx
   - src/pages/PresentationPage.jsx
   - src/pages/ProductPresentationPage.jsx
@@ -154,6 +156,13 @@ sticky `glass` header, `<main id="main">`, and the footer.
   (`own-speaker-profile`) sits between the list and the talk links and opens
   `/speakers/<currentUser.speakerId>`, which marks itself "This is you"
   (speakers doc). `tests/switcher.spec.js` covers the switcher and that link.
+  The menu also always carries `own-profile`, a "Your profile" link to `/profile`.
+  `ProfilePage` loads `getUser(currentUserId).trackSlugs` into checkboxes
+  (`track-<slug>`), `save-tracks` (disabled with `tracks-required` while none is ticked;
+  `tracks-saved` after a save), and lists `suggested-list` (`SessionCard` rows) from
+  `getSessions()` filtered by the *saved* slugs, `!hasEnded` and `!reservationFor`.
+  Seat, waitlist and clash all come from the store, which is why a taken session
+  leaves the list at once. `suggested-empty` shows when nothing is saved or left.
 
 **`HomePage`** (`/`) — static: nothing on it is about the signed-in attendee or
 what is live. It stacks `HeroBar` (`hero`: name, `conference.dates · city`, a

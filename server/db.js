@@ -195,6 +195,13 @@ CREATE TABLE IF NOT EXISTS speaker_follows (
   PRIMARY KEY (user_id, speaker_id)
 );
 
+-- the tracks an attendee picked on their profile; the seed leaves it empty
+CREATE TABLE IF NOT EXISTS user_tracks (
+  user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  track_id INTEGER NOT NULL REFERENCES tracks(id),
+  PRIMARY KEY (user_id, track_id)
+);
+
 CREATE TABLE IF NOT EXISTS ratings (
   id         INTEGER PRIMARY KEY,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -269,6 +276,7 @@ export function dropAll() {
     DROP TABLE IF EXISTS ratings;
     DROP TABLE IF EXISTS check_ins;
     DROP TABLE IF EXISTS reservations;
+    DROP TABLE IF EXISTS user_tracks;
     DROP TABLE IF EXISTS speaker_follows;
     DROP TABLE IF EXISTS session_tags;
     DROP TABLE IF EXISTS session_speakers;

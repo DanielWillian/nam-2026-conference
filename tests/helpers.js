@@ -131,6 +131,9 @@ export const LANES = {
   // Check-ins and ratings only — no seat is booked, so agenda: false lets these
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.
+  // Saves tracks (kept for good: a selection can be changed but never cleared) and books on day 1,
+  // a day only read-only and non-booking lanes share with these two attendees.
+  'profile.walk':     { desktop: { user: jonas, day: 1 },                 mobile: { user: andy, day: 1 } },
   'attendance.checkin-toast': { desktop: { user: kenji, day: 2, slot: '09:00', agenda: false },  mobile: { user: andy, day: 2, slot: '09:00', agenda: false } },
   // Rates for real, so it must land on day index 0 — `today` — per
   // smoke.spec.js's "no session in the future carries a rating".
