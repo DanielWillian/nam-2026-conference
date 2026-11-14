@@ -37,7 +37,7 @@ reply, accept, decline, notification or booking.
 | A new match carries the coffee message and a suggested slot | the matching `PUT` returns `invite` with the fixed message and a day and start; `GET people` returns the same on the match (both are undefined on main) | API |
 | Slot holds no confirmed seat for either attendee and is not before the pinned clock | both attendees hold confirmed seats in the early slots, clock pinned mid-day; the slot is the first later one with neither booked, and not before the clock | API |
 | A waitlist place does not stop a slot | one attendee waitlisted (full session) in the otherwise first free slot; that slot is the one suggested | API |
-| Both attendees see the same message | `GET people` for each side returns an identical `invite` | API, then the spec reads `match-invite` on the page as the matched attendee | 
+| Both attendees see the same message | `GET people` for each side returns an identical `invite` | API, and the spec reads `match-invite` as the matching attendee |
 | No free slot left in common | clock pinned after the last slot of the last day: `invite.message` is the no-time text and the slot is null; the page shows it | API, and `tests/people.spec.js` |
 
 ## Decisions
