@@ -24,4 +24,10 @@ describe('Seeded attendees', () => {
     const strays = users.flatMap((u) => u.interests.filter((i) => !topics.has(i)).map((i) => `${u.name}: ${i}`));
     assert.deepEqual(strays, []);
   });
+
+  test('every attendee starts with no tracks chosen', async () => {
+    const { users } = await api.json('/bootstrap');
+    assert.equal(users.length, 6);
+    for (const u of users) assert.deepEqual((await api.json(`/users/${u.id}`)).trackSlugs, [], u.name);
+  });
 });
