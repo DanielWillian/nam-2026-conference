@@ -136,6 +136,8 @@ export const LANES = {
   'profile.walk':     { desktop: { user: jonas, day: 1 },                 mobile: { user: andy, day: 1 } },
   // Saves a role (kept for good) and books nothing, so it takes a day no booking lane uses.
   'profile.role':     { desktop: { user: jonas, day: 3, readOnly: true }, mobile: { user: abraham, day: 3, readOnly: true } },
+  // Saves a role and likes for good and books nothing; nobody else writes marcus's or sofia's role.
+  'people.deck':      { desktop: { user: marcus, day: 2, agenda: false }, mobile: { user: sofia, day: 2, agenda: false } },
   'attendance.checkin-toast': { desktop: { user: kenji, day: 2, slot: '09:00', agenda: false },  mobile: { user: andy, day: 2, slot: '09:00', agenda: false } },
   // Rates for real, so it must land on day index 0 — `today` — per
   // smoke.spec.js's "no session in the future carries a rating".
