@@ -157,7 +157,10 @@ sticky `glass` header, `<main id="main">`, and the footer.
   `/speakers/<currentUser.speakerId>`, which marks itself "This is you"
   (speakers doc). `tests/switcher.spec.js` covers the switcher and that link.
   The menu also always carries `own-profile`, a "Your profile" link to `/profile`.
-  `ProfilePage` loads `getUser(currentUserId).trackSlugs` into checkboxes
+  `ProfilePage` first has a "Your role" section: radios `role-buyer` / `role-seller` loaded
+  from `getUser(currentUserId).role` (neither checked when null), `save-role` (disabled until
+  one differs from the saved role, via `api.setUserRole`), `role-saved` and `role-error`;
+  independent of the tracks below. It loads `getUser(currentUserId).trackSlugs` into checkboxes
   (`track-<slug>`), `save-tracks` (disabled with `tracks-required` while none is ticked;
   `tracks-saved` after a save), and lists `suggested-list` (`SessionCard` rows) from
   `getSessions()` filtered by the *saved* slugs, `!hasEnded` and `!reservationFor`.

@@ -106,7 +106,9 @@ a deterministic generated SVG portrait (`src/components/GeneratedAvatar.jsx`).
 the seed derives it from the ratings on that speaker's sessions, so most
 speakers start at 0.
 
-**`users`** — `speaker_id` links an attendee to their speaker profile. When set,
+**`users`** — `role` is `'buyer'`, `'seller'` or NULL (nobody has one on a fresh seed; a
+CHECK refuses anything else), set by `PUT /api/users/:id/role` and returned as `role` by
+`toUser`. `speaker_id` links an attendee to their speaker profile. When set,
 `GET /api/users/:id` returns `isSpeaker: true`, a `speaker` object and
 `speakingSessions`. The UI uses `isSpeaker` to offer "Your speaker profile" in
 the attendee menu and `speakerId` to link it and mark that profile as yours;
