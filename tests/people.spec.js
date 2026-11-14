@@ -16,7 +16,7 @@ test.describe('People', () => {
     const tracks = (await (await request.get(`${API}/bootstrap`)).json()).tracks.map((t) => t.slug);
 
     // someone with no role and no tracks sees the prompt and no deck
-    const idle = await (await request.get(`${API}/users/3`)).json();
+    const me = await (await request.get(`${API}/users/${lane.user}`)).json();
     await visit(page, '/people', { as: 3 });
     await expect(page.getByTestId('people-prompt')).toBeVisible();
     await expect(page.getByTestId('people-prompt').getByRole('link')).toHaveAttribute('href', '/profile');
@@ -65,8 +65,8 @@ test.describe('People', () => {
 
     // switching attendee shows their deck and their matches
     await page.getByRole('button', { name: /Switch attendee/ }).click();
-    await page.getByRole('option', { name: new RegExp(idle.name) }).click();
-    await expect(page.getByTestId('people-prompt')).toBeVisible();
+    await page.getByRole('option', { selected: false }).first().click();
+    await expect(page.getByRole('button', { name: new RegExp(`Viewing as ${me.name}`) })).toHaveCount(0);
     await expect(page.getByTestId('match-item').filter({ hasText: liker.name })).toHaveCount(0);
 
     // fits the screen

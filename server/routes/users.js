@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { SESSION_SELECT, toUser, toSpeaker, toSession } from '../lib/query.js';
 import { reserveSeat, releaseSeat, seatState } from '../lib/seats.js';
 import { attendanceState, checkIn, rateSession } from '../lib/attendance.js';
+import { deckFor, matchesFor, decide, isReady } from '../lib/people.js';
 import { todayFor, scheduleFor } from '../lib/agenda.js';
 import { agendaCalendar, baseUrlFor } from '../lib/ical.js';
 
@@ -91,6 +92,35 @@ usersRouter.put('/:id/role', (req, res) => {
   }
   setRole.run(role, req.params.id);
   res.json({ role });
+});
+
+/**
+ * GET /api/users/:id/people
+ * The deck (opposite role, a shared track, nobody already decided) and the matches.
+ * `ready` is false without a role or a saved track, and the deck is then empty.
+ */
+usersRouter.get('/:id/people', (req, res) => {
+  const row = getUser.get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Attendee not found' });
+  res.json({ ready: isReady(row), deck: deckFor(row.id), matches: matchesFor(row.id) });
+});
+
+/**
+ * PUT /api/users/:id/people/:targetId  { choice: 'like' | 'pass' }
+ * The first decision stands; a repeat answers with it and changes nothing.
+ */
+usersRouter.put('/:id/people/:targetId', (req, res) => {
+  if (!userExists.get(req.params.id) || !userExists.get(req.params.targetId)) {
+    return res.status(404).json({ error: 'Attendee not found' });
+  }
+  const { choice } = req.body ?? {};
+  if (choice !== 'like' && choice !== 'pass') {
+    return res.status(400).json({ error: 'Choice must be like or pass' });
+  }
+  if (Number(req.params.id) === Number(req.params.targetId)) {
+    return res.status(400).json({ error: 'You cannot decide on yourself' });
+  }
+  res.json(decide(Number(req.params.id), Number(req.params.targetId), choice));
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */

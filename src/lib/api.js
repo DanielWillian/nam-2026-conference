@@ -64,5 +64,8 @@ export const setUserTracks = (userId, trackSlugs) =>
   api(`/users/${userId}/tracks`, { method: 'PUT', body: JSON.stringify({ trackSlugs }) });
 export const setUserRole = (userId, role) =>
   api(`/users/${userId}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
+export const getPeople = (userId) => api(`/users/${userId}/people`);
+export const decidePerson = (userId, targetId, choice) =>
+  api(`/users/${userId}/people/${targetId}`, { method: 'PUT', body: JSON.stringify({ choice }) });
 export const followSpeaker = (userId, speakerId) => api(`/users/${userId}/follows/${speakerId}`, { method: 'PUT' });
 export const unfollowSpeaker = (userId, speakerId) => api(`/users/${userId}/follows/${speakerId}`, { method: 'DELETE' });
