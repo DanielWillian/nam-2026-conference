@@ -127,13 +127,17 @@ export const LANES = {
   // so concurrent tests cannot collide on these attendee+day pairs.
   'switcher.live-count': { desktop: { user: marcus, day: 3 }, mobile: { user: jonas, day: 0, clean: true } },
   // Books a queued place, a seat beside it and one apart, then removes one: the whole day is the test's.
-  'agenda.page':      { desktop: { user: jonas, day: 1 },                 mobile: { user: andy, day: 1 } },
+  // It never opens the attendee switcher, so Kenji can take it; it needs a day the seed queues
+  // the attendee for nothing (Abraham is waitlisted on day 1). Kenji and Andy pick the same
+  // nearly full session and race for its last seat, so the other pane stays with Jonas.
+  'agenda.page':      { desktop: { user: jonas, day: 1 },                 mobile: { user: kenji, day: 1 } },
   // Check-ins and ratings only — no seat is booked, so agenda: false lets these
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.
   // Saves tracks (kept for good: a selection can be changed but never cleared) and books on day 1,
-  // a day only read-only lanes share with these two attendees ('agenda.page' holds Jonas and Andy on day 1).
-  'profile.walk':     { desktop: { user: kenji, day: 1 },                 mobile: { user: abraham, day: 1 } },
+  // a day no other lane uses for these two attendees. It switches attendee and back, and the
+  // switcher lists only Equal Experts attendees (Jonas, Andy, Abraham), so it must be one of them.
+  'profile.walk':     { desktop: { user: andy, day: 1 },                  mobile: { user: abraham, day: 1 } },
   // Saves a role (kept for good) and books nothing, so it takes a day no booking lane uses.
   'profile.role':     { desktop: { user: jonas, day: 3, readOnly: true }, mobile: { user: abraham, day: 3, readOnly: true } },
   'attendance.checkin-toast': { desktop: { user: kenji, day: 2, slot: '09:00', agenda: false },  mobile: { user: andy, day: 2, slot: '09:00', agenda: false } },
