@@ -36,7 +36,8 @@ below are served, with matching functions in `src/lib/api.js`. What a day is mad
 ## How it works
 
 **`GET /api/users/:id/schedule`** → `{ user: toUser(row), days: scheduleFor(id) }`.
-Client: `api.getSchedule(userId)` — called by `MyAgendaPage`.
+Client: `api.getSchedule(userId)` — called by `MyAgendaPage`, and by `SessionPage`'s
+`HopNotice` for the getting-there notice.
 `agenda.js:scheduleFor` returns one entry per day that has any reservation:
 `{ date, sessions (each with reservation, checkedIn, myStars), conflicts, totalMinutes,
 waitlistedMinutes, venuesVisited }`. `checkedIn` (bool) and `myStars` (number or `null`)
