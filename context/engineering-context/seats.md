@@ -11,6 +11,7 @@ tests:
   - tests/api/seats.test.js
   - tests/api/overlap.test.js
   - tests/api/tracks.test.js
+  - tests/api/role.test.js
   - tests/seats.spec.js
 related: [attendance, agenda, clock, architecture, testing]
 ---
