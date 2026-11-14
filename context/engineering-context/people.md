@@ -46,5 +46,6 @@ simulated time; each match shows its invite. Test ids: `match-invite` (message, 
 
 - Likes and roles are permanent, so a spec that writes them takes its own lane (`people.deck`) and reads the
   deck from the API rather than assuming where it starts.
-- The seed plants three likes for each of users 1 to 6 (`LIKES` in `server/seed.js`, from crowd members of
-  both roles) so a seeded attendee who picks a role and a track can match at once.
+- The seed has every crowd member (ids 7 to 36) like each of users 1 to 6, so any like an attendee makes on a
+  crowd card is a match; only another attendee (1 to 6) has not liked back. The crowd also holds seats in
+  three groups, so the coffee slot offered depends on who you match (see `seed.md`).

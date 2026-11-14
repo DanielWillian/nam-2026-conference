@@ -1,6 +1,6 @@
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { startApi } from './harness.js';
+import { clearAgenda, startApi } from './harness.js';
 
 /**
  * The People deck: opposite role, a shared track, never yourself, never anyone
@@ -33,7 +33,7 @@ describe('GET /users/:id/people', () => {
     assert.ok(deck.length > 0, 'a seller on one track has someone to meet');
 
     const everyone = await Promise.all(
-      Array.from({ length: 26 }, (_, i) => api.json(`/users/${i + 1}`)));
+      Array.from({ length: 36 }, (_, i) => api.json(`/users/${i + 1}`)));
     const expected = everyone
       .filter((u) => u.id !== 1 && u.role === 'buyer' && u.trackSlugs.includes(slugs[0]))
       .map((u) => u.id);
@@ -84,12 +84,11 @@ describe('PUT /users/:id/people/:targetId', () => {
   });
 
   test('a returned like is a match at once, an unreturned one is not', async () => {
-    // seed: crowd members 7 (buyer), 8 (seller) and 9 (buyer) like attendee 1
+    // seed: every crowd member likes attendee 1, so only another attendee has not liked back
     await setUp(1, 'buyer', slugs);
+    await setUp(3, 'seller', slugs);
     const before = (await people(1)).matches.length;
-    const { deck } = await people(1);
-    const stranger = deck.find((c) => c.id !== 8);
-    const miss = await decide(1, stranger.id, 'like');
+    const miss = await decide(1, 3, 'like');
     assert.equal(miss.body.matched, false);
     assert.equal((await people(1)).matches.length, before);
 
@@ -127,6 +126,8 @@ describe('the coffee invite on a new match', () => {
   let slots;
 
   before(async () => {
+    // the mock crowd holds seats, which would hide slots from these pairs: give theirs back
+    for (let id = 10; id <= 23; id++) await clearAgenda(api, id);
     sessions = await api.json('/sessions');
     const seen = new Set();
     slots = sessions

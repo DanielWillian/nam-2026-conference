@@ -915,9 +915,11 @@ const aStmt = prep('INSERT INTO announcements (title,body,kind,venue_id,posted_a
 ANN.forEach((a) => aStmt.run(...a));
 
 /* ============================ MOCK CROWD =========================== */
-// Twenty more attendees to match with (ids 7 to 26). Seeded last and hand written, so nothing
+// Thirty more attendees to match with (ids 7 to 36). Seeded last and hand written, so nothing
 // above shifts: no PRNG draws, and `users` below was read before they existed, so plans,
-// waitlists and fixtures never see them. They hold no seats, follows, check-ins or ratings.
+// waitlists and fixtures never see them. They hold confirmed seats (see the seat groups
+// below) and Day 1 morning check-ins, but no follows or ratings. Position in CROWD sets the
+// role (i % 2) and the seat group (i % 3).
 // None works at the hosts' company, which keeps them out of the attendee switcher.
 const CROWD = [
   ['Priya Raman', 'priya.raman@example.com', 'Director of AI Platform', 'Northwind Logistics', 'she/her', 'Austin', 'America/Chicago', 'Evaluating vendors for a routing copilot and tired of demos.', 'Evaluation,Observability,Cost Optimization', ['AI in Production', 'AI Engineering']],
@@ -925,7 +927,7 @@ const CROWD = [
   ['Hannah Becker', 'hannah.becker@example.com', 'Head of Procurement', 'Brightline Insurance', 'she/her', 'Berlin', 'Europe/Berlin', 'Buying for a regulated shop. Wants audit trails before features.', 'Governance,Compliance,Guardrails', ['Responsible AI', 'AI Product & Strategy']],
   ['Oluwaseun Adeyemi', 'seun.adeyemi@example.com', 'Solutions Architect', 'Kiln Systems', 'he/him', 'Lagos', 'Africa/Lagos', 'Sells inference gateways. Will show you the latency chart.', 'Latency,Model Routing,Quantization', ['Inference & Hardware', 'AI in Production', 'Foundation Models']],
   ['Mei Lin Chou', 'meilin.chou@example.com', 'VP of Product', 'Harbor Health', 'she/her', 'Seattle', 'America/Los_Angeles', 'Looking for a document AI partner for claims intake.', 'Document AI,Human-in-the-Loop,Data Quality', ['Multimodal', 'AI Product & Strategy']],
-  ['Declan O’Brien', 'declan.obrien@example.com', 'Account Executive', 'Vector Forge', 'he/him', 'Dublin', 'Europe/Dublin', 'Vector databases, but make it friendly.', 'Embeddings,Retrieval,Memory Systems', ['RAG & Retrieval', 'Agents & Tool Use']],
+  ['Declan O’Brien', 'declan.obrien@example.com', 'Account Executive', 'Vector Forge', 'he/him', 'Dublin', 'Europe/Dublin', 'Vector databases, but make it friendly.', 'Embeddings,Retrieval,Memory Systems', ['RAG & Retrieval', 'Agents & Tool Use', 'Developer Experience']],
   ['Ananya Iyer', 'ananya.iyer@example.com', 'Engineering Manager', 'Paperplane Travel', 'she/her', 'Bengaluru', 'Asia/Kolkata', 'Shopping for a coding agent the whole team will actually keep using.', 'Code Generation,Agent Design,Tool Calling', ['Developer Experience', 'Agents & Tool Use', 'AI Engineering']],
   ['Lars Nilsson', 'lars.nilsson@example.com', 'CTO', 'Fjord Robotics', 'he/him', 'Gothenburg', 'Europe/Stockholm', 'Edge inference for warehouse robots, and happy to buy the right tool.', 'Computer Vision,Latency,Quantization', ['Inference & Hardware', 'Multimodal', 'Foundation Models', 'AI in Production']],
   ['Camila Duarte', 'camila.duarte@example.com', 'Sales Director', 'Guardrail Labs', 'she/her', 'São Paulo', 'America/Sao_Paulo', 'Red teaming as a service, with a very good case study.', 'Red Teaming,Prompt Injection,Guardrails', ['Responsible AI', 'AI in Production']],
@@ -940,6 +942,16 @@ const CROWD = [
   ['Nikolai Petrov', 'nikolai.petrov@example.com', 'Infrastructure Architect', 'Granite Compute', 'he/him', 'Warsaw', 'Europe/Warsaw', 'GPU capacity, reserved or on demand, priced honestly.', 'Cost Optimization,Quantization,Latency', ['Inference & Hardware', 'Foundation Models']],
   ['Amara Okafor', 'amara.okafor@example.com', 'VP of Customer Success', 'Beacon Support', 'she/her', 'Nairobi', 'Africa/Nairobi', 'Selling conversational support; wants to hear how buyers vet it.', 'Reasoning,Structured Output,Human-in-the-Loop', ['AI Product & Strategy', 'Agents & Tool Use', 'AI in Production']],
   ['Jacob Lindqvist', 'jacob.lindqvist@example.com', 'Senior Staff Engineer', 'Kestrel Payments', 'he/him', 'Copenhagen', 'Europe/Copenhagen', 'Evaluating code review agents for a payments codebase.', 'Code Generation,Prompt Injection,Context Engineering', ['Developer Experience', 'Responsible AI']],
+  ['Elena Rossi', 'elena.rossi@example.com', 'Head of Innovation', 'Caldera Retail', 'she/her', 'Milan', 'Europe/Rome', 'Choosing a foundation model partner for a multilingual shopping assistant.', 'Reasoning,Long Context,Evaluation', ['Foundation Models', 'Agents & Tool Use', 'RAG & Retrieval', 'AI Engineering']],
+  ['Kwame Boateng', 'kwame.boateng@example.com', 'Founder', 'Savanna Agents', 'he/him', 'Accra', 'Africa/Accra', 'Selling agent runtimes for field operations teams.', 'Agent Design,Tool Calling,Memory Systems', ['Agents & Tool Use', 'RAG & Retrieval', 'Multimodal', 'AI Product & Strategy']],
+  ['Mina Park', 'mina.park@example.com', 'Director of Engineering', 'Hanbit Logistics', 'she/her', 'Seoul', 'Asia/Seoul', 'Wants an inference stack that stays cheap at peak load.', 'Cost Optimization,Quantization,Observability', ['RAG & Retrieval', 'AI Engineering', 'Inference & Hardware', 'Responsible AI']],
+  ['Dmitri Volkov', 'dmitri.volkov@example.com', 'Sales Engineer', 'Ironclad Serving', 'he/him', 'Tbilisi', 'Asia/Tbilisi', 'Serving stacks with honest benchmarks and a real support line.', 'Latency,Benchmarking,Quantization', ['AI Engineering', 'Responsible AI', 'Multimodal', 'AI in Production']],
+  ['Chloe Martin', 'chloe.martin@example.com', 'Chief Data Officer', 'Meadow Foods', 'she/her', 'Lyon', 'Europe/Paris', 'Buying governance tooling for a model risk committee.', 'Governance,Compliance,Data Quality', ['Foundation Models', 'RAG & Retrieval', 'Responsible AI', 'Multimodal']],
+  ['Idris Bello', 'idris.bello@example.com', 'Partnerships Manager', 'Delta Vision', 'he/him', 'Abuja', 'Africa/Lagos', 'Computer vision for inspection lines, looking for channel partners.', 'Computer Vision,Document AI,Structured Output', ['AI Product & Strategy', 'Agents & Tool Use']],
+  ['Freya Hansen', 'freya.hansen@example.com', 'VP of Operations', 'Polar Freight', 'she/her', 'Aarhus', 'Europe/Copenhagen', 'Rolling out copilots to dispatchers, one depot at a time.', 'Human-in-the-Loop,Evaluation,Reasoning', ['Inference & Hardware', 'Multimodal', 'Developer Experience', 'Responsible AI']],
+  ['Tariq Aziz', 'tariq.aziz@example.com', 'Solutions Lead', 'Oasis Cloud', 'he/him', 'Riyadh', 'Asia/Riyadh', 'Managed model hosting for regulated industries.', 'Model Routing,Governance,Latency', ['AI in Production', 'Developer Experience', 'Foundation Models']],
+  ['Noor Haddad', 'noor.haddad@example.com', 'Head of Procurement', 'Cedar Telecom', 'she/her', 'Amman', 'Asia/Amman', 'Comparing coding assistants and support agents on one scorecard.', 'Code Generation,Prompt Engineering,Guardrails', ['Developer Experience', 'Agents & Tool Use', 'AI in Production']],
+  ['Mateo Vargas', 'mateo.vargas@example.com', 'Account Director', 'Andes Analytics', 'he/him', 'Bogotá', 'America/Bogota', 'Dashboards that explain what the model just did.', 'Observability,Benchmarking,Evaluation', ['AI Engineering', 'Responsible AI', 'Multimodal', 'AI in Production']],
 ];
 const crowdStmt = prep(`INSERT INTO users (name,email,job_title,company,initials,accent,image_url,bio,pronouns,home_city,timezone,ticket_tier,interests,speaker_id)
   VALUES (?,?,?,?,?,?,NULL,?,?,?,?,'Standard',?,NULL)`);
@@ -952,25 +964,39 @@ CROWD.forEach(([name, email, title, company, pronouns, city, tz, bio, interests,
   trackNames.forEach((t) => crowdTrack.run(id, trackBy[t].id));
 });
 
-// Three crowd members, of both roles, like each seeded attendee 1 to 6, so whoever picks a
-// role and a track can match straight away. Hand written, no PRNG.
-const LIKES = [
-  ['priya.raman@example.com', 1], ['tomas.herrera@example.com', 1], ['hannah.becker@example.com', 1],
-  ['seun.adeyemi@example.com', 2], ['meilin.chou@example.com', 2], ['declan.obrien@example.com', 2],
-  ['ananya.iyer@example.com', 3], ['lars.nilsson@example.com', 3], ['camila.duarte@example.com', 3],
-  ['yusuf.karim@example.com', 4], ['sakura.watanabe@example.com', 4], ['gabriel.moreau@example.com', 4],
-  ['zainab.mahmoud@example.com', 5], ['pedro.santos@example.com', 5], ['ingrid.solberg@example.com', 5],
-  ['rohan.mehta@example.com', 6], ['beatriz.fuentes@example.com', 6], ['nikolai.petrov@example.com', 6],
-];
+// Every crowd member likes each seeded attendee 1 to 6, so whoever picks a role and a track
+// matches whoever they like. No PRNG.
 const likeStmt = db.prepare(`INSERT INTO people_decisions (user_id,target_id,choice)
-  VALUES ((SELECT id FROM users WHERE email = ?), ?, 'like')`);
-LIKES.forEach(([email, target]) => likeStmt.run(email, target));
+  VALUES (?, ?, 'like')`);
+const crowdIds = db.prepare('SELECT id FROM users WHERE email LIKE ? ORDER BY id').all('%@example.com').map((r) => r.id);
+crowdIds.forEach((id) => [1, 2, 3, 4, 5, 6].forEach((target) => likeStmt.run(id, target)));
+
+// Seat groups: member i holds a confirmed seat in every slot whose index is not i % 3, so
+// each group is free in a different third of the slot list and the first free slot differs.
+// Each seat goes to the session of its slot with most free seats, so none fills a room.
+const crowdSlots = db.prepare('SELECT DISTINCT day, starts_at FROM sessions ORDER BY day, starts_at').all();
+const roomiest = db.prepare(`SELECT id FROM sessions WHERE day = ? AND starts_at = ?
+  ORDER BY capacity - seats_taken DESC, id LIMIT 1`);
+const crowdSeats = [];
+crowdIds.forEach((id, i) => crowdSlots.forEach((slot, k) => {
+  if (k % 3 === i % 3) return;
+  const sessionId = roomiest.get(slot.day, slot.starts_at).id;
+  resStmt.run(id, sessionId, 'confirmed', `${addDays(DAYS[0], -1)}T12:00:00Z`);
+  bumpSeat.run(sessionId);
+  crowdSeats.push([id, sessionId]);
+}));
+// the crowd attended Day 1's morning too; they leave no ratings, so the rollup above stands
+const sessionAt = db.prepare('SELECT day, starts_at, ends_at FROM sessions WHERE id = ?');
+crowdSeats.forEach(([id, sessionId]) => {
+  const s = sessionAt.get(sessionId);
+  if (s.day === DAYS[0] && s.ends_at <= MORNING_ENDS) ciStmt.run(id, sessionId, `${s.day}T${s.starts_at}:00Z`);
+});
 
 /* ============================== SUMMARY ============================ */
 const c = (t) => db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n;
 console.log(`✓ ${c('venues')} venues · ${c('rooms')} rooms · ${c('tracks')} tracks · ${c('tags')} tags`);
 console.log(`✓ ${db.prepare('SELECT COUNT(*) n FROM speakers WHERE image_url IS NOT NULL').get().n}/${c('speakers')} speakers have portraits`);
 console.log(`✓ ${c('sessions')} sessions · ${c('speakers')} speakers · ${c('session_speakers')} speaking slots · ${c('session_tags')} tag links`);
-console.log(`✓ ${CROWD.length} mock attendees with a role and tracks, no seats`);
+console.log(`✓ ${CROWD.length} mock attendees with a role, tracks and ${crowdSeats.length} confirmed seats`);
 console.log(`✓ ${c('vendors')} vendors · ${c('sponsors')} sponsors · ${c('announcements')} announcements`);
 console.log(`✓ ${db.prepare('SELECT COUNT(*) n FROM users WHERE speaker_id IS NOT NULL').get().n} of ${c('users')} are also speaking · ${c('reservations')} seats booked · ${c('speaker_follows')} follows · ${c('ratings')} ratings`);
