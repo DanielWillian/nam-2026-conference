@@ -134,6 +134,8 @@ export const LANES = {
   // Saves tracks (kept for good: a selection can be changed but never cleared) and books on day 1,
   // a day only read-only and non-booking lanes share with these two attendees.
   'profile.walk':     { desktop: { user: jonas, day: 1 },                 mobile: { user: andy, day: 1 } },
+  // Saves a role (kept for good) and books nothing, so it takes a day no booking lane uses.
+  'profile.role':     { desktop: { user: jonas, day: 3, readOnly: true }, mobile: { user: abraham, day: 3, readOnly: true } },
   'attendance.checkin-toast': { desktop: { user: kenji, day: 2, slot: '09:00', agenda: false },  mobile: { user: andy, day: 2, slot: '09:00', agenda: false } },
   // Rates for real, so it must land on day index 0 — `today` — per
   // smoke.spec.js's "no session in the future carries a rating".

@@ -914,10 +914,49 @@ const ANN = [
 const aStmt = prep('INSERT INTO announcements (title,body,kind,venue_id,posted_at,pinned) VALUES (?,?,?,?,?,?)');
 ANN.forEach((a) => aStmt.run(...a));
 
+/* ============================ MOCK CROWD =========================== */
+// Twenty more attendees to match with (ids 7 to 26). Seeded last and hand written, so nothing
+// above shifts: no PRNG draws, and `users` below was read before they existed, so plans,
+// waitlists and fixtures never see them. They hold no seats, follows, check-ins or ratings.
+// None works at the hosts' company, which keeps them out of the attendee switcher.
+const CROWD = [
+  ['Priya Raman', 'priya.raman@example.com', 'Director of AI Platform', 'Northwind Logistics', 'she/her', 'Austin', 'America/Chicago', 'Evaluating vendors for a routing copilot and tired of demos.', 'Evaluation,Observability,Cost Optimization', ['AI in Production', 'AI Engineering']],
+  ['Tomás Herrera', 'tomas.herrera@example.com', 'Founder', 'Lumen Retrieval', 'he/him', 'Mexico City', 'America/Mexico_City', 'Selling hybrid search to teams who outgrew their vector store.', 'Retrieval,Embeddings,Search Relevance', ['RAG & Retrieval', 'Multimodal', 'AI Engineering']],
+  ['Hannah Becker', 'hannah.becker@example.com', 'Head of Procurement', 'Brightline Insurance', 'she/her', 'Berlin', 'Europe/Berlin', 'Buying for a regulated shop. Wants audit trails before features.', 'Governance,Compliance,Guardrails', ['Responsible AI', 'AI Product & Strategy']],
+  ['Oluwaseun Adeyemi', 'seun.adeyemi@example.com', 'Solutions Architect', 'Kiln Systems', 'he/him', 'Lagos', 'Africa/Lagos', 'Sells inference gateways. Will show you the latency chart.', 'Latency,Model Routing,Quantization', ['Inference & Hardware', 'AI in Production', 'Foundation Models']],
+  ['Mei Lin Chou', 'meilin.chou@example.com', 'VP of Product', 'Harbor Health', 'she/her', 'Seattle', 'America/Los_Angeles', 'Looking for a document AI partner for claims intake.', 'Document AI,Human-in-the-Loop,Data Quality', ['Multimodal', 'AI Product & Strategy']],
+  ['Declan O’Brien', 'declan.obrien@example.com', 'Account Executive', 'Vector Forge', 'he/him', 'Dublin', 'Europe/Dublin', 'Vector databases, but make it friendly.', 'Embeddings,Retrieval,Memory Systems', ['RAG & Retrieval', 'Agents & Tool Use']],
+  ['Ananya Iyer', 'ananya.iyer@example.com', 'Engineering Manager', 'Paperplane Travel', 'she/her', 'Bengaluru', 'Asia/Kolkata', 'Shopping for a coding agent the whole team will actually keep using.', 'Code Generation,Agent Design,Tool Calling', ['Developer Experience', 'Agents & Tool Use', 'AI Engineering']],
+  ['Lars Nilsson', 'lars.nilsson@example.com', 'CTO', 'Fjord Robotics', 'he/him', 'Gothenburg', 'Europe/Stockholm', 'Edge inference for warehouse robots, and happy to buy the right tool.', 'Computer Vision,Latency,Quantization', ['Inference & Hardware', 'Multimodal', 'Foundation Models', 'AI in Production']],
+  ['Camila Duarte', 'camila.duarte@example.com', 'Sales Director', 'Guardrail Labs', 'she/her', 'São Paulo', 'America/Sao_Paulo', 'Red teaming as a service, with a very good case study.', 'Red Teaming,Prompt Injection,Guardrails', ['Responsible AI', 'AI in Production']],
+  ['Yusuf Karim', 'yusuf.karim@example.com', 'Head of Data', 'Meridian Bank', 'he/him', 'London', 'Europe/London', 'Needs synthetic data that survives a compliance review.', 'Synthetic Data,Data Quality,Governance', ['Responsible AI', 'Foundation Models', 'AI Engineering']],
+  ['Sakura Watanabe', 'sakura.watanabe@example.com', 'Partnerships Lead', 'Tessera AI', 'she/her', 'Osaka', 'Asia/Tokyo', 'Looking for integration partners for a speech stack.', 'Speech,Reasoning,Long Context', ['Multimodal', 'Foundation Models']],
+  ['Gabriel Moreau', 'gabriel.moreau@example.com', 'Chief Product Officer', 'Atelier Commerce', 'he/him', 'Montreal', 'America/Toronto', 'Wants recommenders that explain themselves to merchants.', 'Recommenders,Search Relevance,Evaluation', ['AI Product & Strategy', 'RAG & Retrieval']],
+  ['Zainab Mahmoud', 'zainab.mahmoud@example.com', 'Platform Lead', 'Sandstone Energy', 'she/her', 'Dubai', 'Asia/Dubai', 'Standardising how twelve teams buy and run models.', 'Model Routing,Cost Optimization,Observability', ['AI in Production', 'AI Engineering', 'Inference & Hardware']],
+  ['Pedro Santos', 'pedro.santos@example.com', 'Developer Advocate', 'Orchard Agents', 'he/him', 'Lisbon', 'Europe/Lisbon', 'Multi-agent frameworks, demoed live and occasionally broken.', 'Multi-Agent,Agent Design,Tool Calling', ['Agents & Tool Use', 'Developer Experience']],
+  ['Ingrid Solberg', 'ingrid.solberg@example.com', 'Head of Digital', 'Nordlys Airlines', 'she/her', 'Oslo', 'Europe/Oslo', 'Buying a support assistant that can say I do not know.', 'Hallucination,Human-in-the-Loop,Guardrails', ['Responsible AI', 'AI Product & Strategy', 'AI in Production']],
+  ['Rohan Mehta', 'rohan.mehta@example.com', 'Co-founder', 'Quill Evaluate', 'he/him', 'San Francisco', 'America/Los_Angeles', 'Eval tooling for teams that ship weekly.', 'Evaluation,Benchmarking,Observability', ['AI Engineering', 'Developer Experience']],
+  ['Beatriz Fuentes', 'beatriz.fuentes@example.com', 'Innovation Manager', 'Solana Hotels', 'she/her', 'Madrid', 'Europe/Madrid', 'Piloting concierge agents across forty properties.', 'Agent Design,Memory Systems,Speech', ['Agents & Tool Use', 'AI Product & Strategy']],
+  ['Nikolai Petrov', 'nikolai.petrov@example.com', 'Infrastructure Architect', 'Granite Compute', 'he/him', 'Warsaw', 'Europe/Warsaw', 'GPU capacity, reserved or on demand, priced honestly.', 'Cost Optimization,Quantization,Latency', ['Inference & Hardware', 'Foundation Models']],
+  ['Amara Okafor', 'amara.okafor@example.com', 'VP of Customer Success', 'Beacon Support', 'she/her', 'Nairobi', 'Africa/Nairobi', 'Selling conversational support; wants to hear how buyers vet it.', 'Reasoning,Structured Output,Human-in-the-Loop', ['AI Product & Strategy', 'Agents & Tool Use', 'AI in Production']],
+  ['Jacob Lindqvist', 'jacob.lindqvist@example.com', 'Senior Staff Engineer', 'Kestrel Payments', 'he/him', 'Copenhagen', 'Europe/Copenhagen', 'Evaluating code review agents for a payments codebase.', 'Code Generation,Prompt Injection,Context Engineering', ['Developer Experience', 'Responsible AI']],
+];
+const crowdStmt = prep(`INSERT INTO users (name,email,job_title,company,initials,accent,image_url,bio,pronouns,home_city,timezone,ticket_tier,interests,speaker_id)
+  VALUES (?,?,?,?,?,?,NULL,?,?,?,?,'Standard',?,NULL)`);
+const crowdRole = db.prepare('UPDATE users SET role = ? WHERE id = ?');
+const crowdTrack = prep('INSERT INTO user_tracks (user_id,track_id) VALUES (?,?)');
+CROWD.forEach(([name, email, title, company, pronouns, city, tz, bio, interests, trackNames], i) => {
+  const id = crowdStmt.run(name, email, title, company, initialsOf(name), ACCENTS[i % ACCENTS.length],
+    bio, pronouns, city, tz, interests).lastInsertRowid;
+  crowdRole.run(i % 2 ? 'seller' : 'buyer', id);
+  trackNames.forEach((t) => crowdTrack.run(id, trackBy[t].id));
+});
+
 /* ============================== SUMMARY ============================ */
 const c = (t) => db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n;
 console.log(`✓ ${c('venues')} venues · ${c('rooms')} rooms · ${c('tracks')} tracks · ${c('tags')} tags`);
 console.log(`✓ ${db.prepare('SELECT COUNT(*) n FROM speakers WHERE image_url IS NOT NULL').get().n}/${c('speakers')} speakers have portraits`);
 console.log(`✓ ${c('sessions')} sessions · ${c('speakers')} speakers · ${c('session_speakers')} speaking slots · ${c('session_tags')} tag links`);
+console.log(`✓ ${CROWD.length} mock attendees with a role and tracks, no seats`);
 console.log(`✓ ${c('vendors')} vendors · ${c('sponsors')} sponsors · ${c('announcements')} announcements`);
 console.log(`✓ ${db.prepare('SELECT COUNT(*) n FROM users WHERE speaker_id IS NOT NULL').get().n} of ${c('users')} are also speaking · ${c('reservations')} seats booked · ${c('speaker_follows')} follows · ${c('ratings')} ratings`);

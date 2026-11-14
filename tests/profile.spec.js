@@ -9,6 +9,41 @@ import { API, visit, momentOn, conferenceDays, laneFor, bookableFor, shotForPR }
  * assumes the lane starts empty, and it ends with its seats given back.
  */
 test.describe('Profile', () => {
+  test('choose buyer or seller, keep it across a reload and a switch', async ({ page, request }, testInfo) => {
+    const lane = await laneFor('profile.role', testInfo);
+    const stored = async () => (await (await request.get(`${API}/users/${lane.user}`)).json());
+    const me = await stored();
+    const buyer = page.getByTestId('role-buyer');
+    const seller = page.getByTestId('role-seller');
+    const save = page.getByTestId('save-role');
+
+    await visit(page, '/profile', { as: lane.user });
+    await expect(buyer).toBeVisible();
+    // A retry finds the role already saved; a first try finds neither chosen.
+    if (me.role === null) {
+      await expect(buyer).not.toBeChecked();
+      await expect(seller).not.toBeChecked();
+      await expect(save).toBeDisabled();
+    }
+
+    await seller.check();
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(page.getByTestId('role-saved')).toBeVisible();
+    await shotForPR(page, 'profile role choice');
+
+    await page.reload();
+    await expect(seller).toBeChecked();
+    await expect(buyer).not.toBeChecked();
+    await page.getByRole('button', { name: /Switch attendee/ }).click();
+    await page.getByRole('option', { selected: false }).first().click();
+    await expect(page.getByRole('button', { name: new RegExp(`Viewing as ${me.name}`) })).toHaveCount(0);
+    await page.getByRole('button', { name: /Switch attendee/ }).click();
+    await page.getByRole('option', { name: new RegExp(me.name) }).click();
+    await expect(seller).toBeChecked();
+    expect((await stored()).role).toBe('seller');
+  });
+
   test('pick tracks, get suggestions, book from them, untick a track', async ({ page, request }, testInfo) => {
     const lane = await laneFor('profile.walk', testInfo);
     const at = await momentOn(0, '11:00');

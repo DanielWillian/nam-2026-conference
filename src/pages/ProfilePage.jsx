@@ -19,6 +19,11 @@ export function ProfilePage() {
   const [justSaved, setJustSaved] = useState(false);
   const [error, setError] = useState(null);
 
+  const [role, setRole] = useState(null);
+  const [savedRole, setSavedRole] = useState(null);
+  const [roleSaved, setRoleSaved] = useState(false);
+  const [roleError, setRoleError] = useState(null);
+
   const sessions = useFetch(() => api.getSessions(), []);
 
   useEffect(() => {
@@ -26,8 +31,14 @@ export function ProfilePage() {
     setTicked(null);
     setSaved(null);
     setJustSaved(false);
+    setRole(null);
+    setSavedRole(null);
+    setRoleSaved(false);
+    setRoleError(null);
     api.getUser(currentUserId).then((u) => {
       if (!active) return;
+      setRole(u.role);
+      setSavedRole(u.role);
       setTicked(new Set(u.trackSlugs));
       setSaved(new Set(u.trackSlugs));
     }).catch(() => {});
@@ -56,6 +67,17 @@ export function ProfilePage() {
     }
   };
 
+  const saveRole = async () => {
+    setRoleError(null);
+    try {
+      const res = await api.setUserRole(currentUserId, role);
+      setSavedRole(res.role);
+      setRoleSaved(true);
+    } catch (err) {
+      setRoleError(err.message);
+    }
+  };
+
   const suggested = (sessions.data ?? []).filter((s) =>
     saved.has(s.track.slug) && !hasEnded(s, clock) && !reservationFor(s.id));
 
@@ -66,6 +88,32 @@ export function ProfilePage() {
         title="Your profile"
         description="Pick the tracks you care about and we will suggest sessions from them."
       />
+
+      <section className="space-y-4 rounded-2xl border border-hairline bg-surface p-5">
+        <h3 className="font-display text-lg">Your role</h3>
+        <div role="radiogroup" aria-label="You are a" className="grid gap-2 sm:grid-cols-2">
+          {['buyer', 'seller'].map((r) => (
+            <label key={r} className="flex cursor-pointer items-center gap-3 rounded-xl border border-hairline bg-raised px-3 py-2.5 text-sm">
+              <input
+                type="radio"
+                name="role"
+                className="size-4 accent-violet-500"
+                checked={role === r}
+                onChange={() => { setRole(r); setRoleSaved(false); }}
+                data-testid={`role-${r}`}
+              />
+              <span className="font-semibold capitalize">{r}</span>
+            </label>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="primary" size="sm" onClick={saveRole} disabled={!role || role === savedRole} data-testid="save-role">
+            Save role
+          </Button>
+          {roleSaved && <span className="text-xs text-emerald-300" data-testid="role-saved" role="status">Saved</span>}
+          {roleError && <span className="text-xs text-rose-300" role="alert" data-testid="role-error">{roleError}</span>}
+        </div>
+      </section>
 
       <section className="space-y-4 rounded-2xl border border-hairline bg-surface p-5">
         <h3 className="font-display text-lg">Your tracks</h3>
