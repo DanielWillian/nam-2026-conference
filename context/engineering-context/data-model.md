@@ -35,6 +35,7 @@ Approximate counts from a fresh seed. The tables attendees write to drift as you
 | `speaker_follows` | ~20 | Follow button on a speaker's profile; only the speaker pages read it |
 | `user_tracks` | 0, grows | The tracks an attendee picked on `/profile`, `(user_id, track_id)`. The seed writes none; a saved selection is never empty |
 | `people_decisions` | 18, grows | A pass or like on the People deck, `(user_id, target_id, choice)`; the first choice stands. The seed writes eighteen likes on users 1 to 6 |
+| `match_invites` | 0, grows | The coffee invite fixed when two attendees match, `(user_a, user_b)` with `user_a < user_b`, plus `message`, and `day`/`starts_at` (both NULL when no time was available). Written once, never recalculated |
 | `ratings` | ~10 | Only submittable by someone who checked in, once the session is over |
 | `check_ins` | ~10, grows | Proof of attendance; gates rating. Seeded only for Day 1's morning |
 | `vendors` | 24 | Food and drink at both venues, with opening hours and wait times |
