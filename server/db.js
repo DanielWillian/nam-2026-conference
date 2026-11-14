@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS users (
   timezone    TEXT NOT NULL DEFAULT 'America/Los_Angeles',
   ticket_tier TEXT NOT NULL DEFAULT 'Standard',
   interests   TEXT NOT NULL DEFAULT '',
+  -- Chosen on the profile page; NULL until they pick one.
+  role        TEXT CHECK (role IN ('buyer', 'seller')),
   -- Attendees who are also presenting link to their speakers row.
   speaker_id  INTEGER REFERENCES speakers(id)
 );

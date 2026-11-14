@@ -28,6 +28,7 @@ const myTrackSlugs = db.prepare(`
 const trackIdBySlug = db.prepare('SELECT id FROM tracks WHERE slug = ?');
 const clearTracks = db.prepare('DELETE FROM user_tracks WHERE user_id = ?');
 const addTrack = db.prepare('INSERT INTO user_tracks (user_id, track_id) VALUES (?, ?)');
+const setRole = db.prepare('UPDATE users SET role = ? WHERE id = ?');
 const follow = db.prepare('INSERT OR IGNORE INTO speaker_follows (user_id, speaker_id) VALUES (?, ?)');
 const unfollow = db.prepare('DELETE FROM speaker_follows WHERE user_id = ? AND speaker_id = ?');
 
@@ -76,6 +77,20 @@ usersRouter.put('/:id/tracks', (req, res) => {
   const userId = Number(req.params.id);
   replaceTracks(userId, [...new Set(ids)]);
   res.json({ trackSlugs: myTrackSlugs.all(userId).map((t) => t.slug) });
+});
+
+/**
+ * PUT /api/users/:id/role  { role }
+ * Stores whether the attendee is a buyer or a seller. Anything else is refused.
+ */
+usersRouter.put('/:id/role', (req, res) => {
+  if (!userExists.get(req.params.id)) return res.status(404).json({ error: 'Attendee not found' });
+  const { role } = req.body ?? {};
+  if (role !== 'buyer' && role !== 'seller') {
+    return res.status(400).json({ error: 'Role must be buyer or seller' });
+  }
+  setRole.run(role, req.params.id);
+  res.json({ role });
 });
 
 /** A subscribable feed of everything this attendee holds a seat for. */
