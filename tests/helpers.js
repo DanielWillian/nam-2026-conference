@@ -132,8 +132,8 @@ export const LANES = {
   // share a day with booking lanes (see lanes.test.js). The slot is the one
   // unattendedFor() picks its session from.
   // Saves tracks (kept for good: a selection can be changed but never cleared) and books on day 1,
-  // a day only read-only and non-booking lanes share with these two attendees.
-  'profile.walk':     { desktop: { user: jonas, day: 1 },                 mobile: { user: andy, day: 1 } },
+  // a day only read-only lanes share with these two attendees ('agenda.page' holds Jonas and Andy on day 1).
+  'profile.walk':     { desktop: { user: kenji, day: 1 },                 mobile: { user: abraham, day: 1 } },
   // Saves a role (kept for good) and books nothing, so it takes a day no booking lane uses.
   'profile.role':     { desktop: { user: jonas, day: 3, readOnly: true }, mobile: { user: abraham, day: 3, readOnly: true } },
   // Saves a role and likes for good and books nothing; nobody else writes marcus's or sofia's role.
