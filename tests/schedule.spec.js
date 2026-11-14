@@ -22,6 +22,50 @@ test.describe('Schedule', () => {
     await expect(rail).not.toContainText('today');
   });
 
+  test('track pills toggle, several at once, and the list stays', async ({ page, request }) => {
+    const days = await conferenceDays();
+    const boot = await (await request.get(`${API}/bootstrap`)).json();
+    const [a, b] = boot.tracks;
+    const count = async (slug) =>
+      (await (await request.get(`${API}/sessions?day=${days[0]}${slug ? `&trackSlug=${slug}` : ''}`)).json()).length;
+    const [nA, nB, nAll] = [await count(a.slug), await count(b.slug), await count('')];
+    const shown = async (n) => expect(page.getByTestId('result-count')).toHaveText(new RegExp(`^${n} sessions?$`));
+    const pill = (t) => page.getByRole('button', { name: t.shortName ?? t.name, exact: true });
+
+    await visit(page, `/schedule?day=${days[0]}`);
+    const filters = page.getByRole('button', { name: /^Filters/ });
+    if (await filters.isVisible()) await filters.click();
+    await waitForResults(page);
+    await shown(nAll);
+
+    await pill(a).click();
+    await expect(page).toHaveURL(new RegExp(`track=${a.slug}$`));
+    await shown(nA);
+    await expect(pill(a)).toHaveAttribute('aria-pressed', 'true');
+    await expect(pill(b)).toHaveAttribute('aria-pressed', 'false');
+
+    await pill(b).click();
+    await expect(page).toHaveURL(new RegExp(`track=${a.slug}(,|%2C)${b.slug}`));
+    await shown(nA + nB);
+    await expect(pill(b)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('view-grid')).toBeDisabled();
+    await shotForPR(page, 'two tracks selected');
+
+    await pill(a).click();
+    await expect(page).toHaveURL(new RegExp(`track=${b.slug}$`));
+    await shown(nB);
+    await expect(pill(a)).toHaveAttribute('aria-pressed', 'false');
+
+    await pill(b).click();
+    await expect(page).not.toHaveURL(/track=/);
+    await shown(nAll);
+
+    await pill(a).click();
+    await page.getByRole('button', { name: 'All', exact: true }).click();
+    await expect(page).not.toHaveURL(/track=/);
+    await shown(nAll);
+  });
+
   test('switching day changes the results', async ({ page }) => {
     await visit(page, '/schedule?view=list');
     await waitForResults(page);
